@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>宝可梦图鉴 · 静态版</title>
+	<meta name="description" content="离线宝可梦图鉴，基于 PokeAPI 数据并通过静态 JSON 提供搜索与详情浏览。">
+	<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+	<header class="site-nav">
+		<div class="site-brand">
+			<a href="./" aria-label="返回宝可梦列表">PokeIndex</a>
+		</div>
+		<div class="nav-meta">
+			<span id="data-count">加载中…</span>
+			<span id="data-updated"></span>
+		</div>
+	</header>
+	<main>
+		<section class="hero">
+			<div>
+				<p class="eyebrow">宝可梦资料库</p>
+				<h1>静态站点，实时体验</h1>
+				<p class="lede">通过 GitHub Pages 托管，只需一个 JSON 文件即可完成本地化图鉴的展示与搜索。</p>
+			</div>
+			<form class="search-bar" action="javascript:void 0" aria-label="搜索宝可梦">
+				<input id="search-input" type="search" placeholder="输入 Pikachu / 皮卡丘 / 025" autocomplete="off" spellcheck="false">
+				<button type="button" id="reset-search">清除</button>
+			</form>
+		</section>
+
+		<section class="card-grid" id="card-grid" aria-live="polite">
+			<div class="empty-state" id="loading-state">正在载入图鉴数据…</div>
+		</section>
+	</main>
+	<footer class="site-footer">
+		<span>数据源：PokeAPI · 静态导出自 pokeindex.db</span>
+		<span>前端：纯 HTML + CSS + JavaScript · 托管于 GitHub Pages</span>
+	</footer>
+
+	<div class="detail-overlay" id="detail-overlay" hidden>
+		<article class="detail-panel" role="dialog" aria-modal="true" aria-labelledby="detail-title">
+			<button class="close-detail" type="button" aria-label="关闭详情" data-close>&times;</button>
+			<div id="detail-content" class="detail-content"></div>
+		</article>
+	</div>
+
+	<noscript>
+		<div class="noscript-warning">此站点依赖 JavaScript 加载数据，请启用后刷新页面。</div>
+	</noscript>
+	<script src="assets/app.js" defer></script>
+</body>
+</html>
