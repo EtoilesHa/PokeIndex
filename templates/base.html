@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>{% block title %}PokeIndex{% endblock %}</title>
+	<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+	<header class="site-nav">
+		<div class="site-brand">
+			<a href="{{ url_for('index') }}" aria-label="返回宝可梦列表">宝可梦图鉴</a>
+		</div>
+		<div class="nav-meta">数据源自 PokeAPI / 本地 pokeindex.db</div>
+	</header>
+	<main>
+		{% block content %}{% endblock %}
+	</main>
+	<footer class="site-footer">
+		<span>数据存储：pokeindex.db</span>
+		<span>Powered by Flask · 数据版权归 Pokémon Company 所有</span>
+	</footer>
+</body>
+</html>

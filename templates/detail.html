@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}{{ pokemon.names.zh or pokemon.names.en }} · Pokédex{% endblock %}
+{% block content %}
+<a class="back-link" href="{{ url_for('index') }}">← 返回列表</a>
+<section class="detail-hero">
+	<div class="detail-image">
+		<img src="{{ pokemon.sprite }}" alt="{{ pokemon.names.zh or pokemon.names.en }}" loading="lazy">
+	</div>
+	<div class="detail-meta">
+		<p class="eyebrow">#{{ '%03d'|format(pokemon.id) }}</p>
+		<h1>{{ pokemon.names.zh or pokemon.names.en }}</h1>
+		<p class="names-line">{{ pokemon.names.ja or pokemon.names.en }} · {{ pokemon.names.en }}</p>
+		<p class="description">{{ pokemon.description or '暂无图鉴描述。' }}</p>
+		<div class="meta-grid">
+			<div>
+				<h4>属性</h4>
+				<div class="type-row">
+					{% for type in pokemon.types %}
+					<span class="type-pill type-{{ type }}">{{ type }}</span>
+					{% endfor %}
+				</div>
+			</div>
+			<div>
+				<h4>特性</h4>
+				<ul>
+					{% for ability in pokemon.abilities %}
+					<li>{{ ability.name }}{% if ability.is_hidden %} <span class="badge">隐藏</span>{% endif %}</li>
+					{% endfor %}
+				</ul>
+			</div>
+			<div>
+				<h4>蛋组</h4>
+				<p>{{ pokemon.egg_groups | join(' · ') if pokemon.egg_groups else '—' }}</p>
+			</div>
+			<div>
+				<h4>基础数据</h4>
+				<p>身高 {{ pokemon.height or '—' }} · 体重 {{ pokemon.weight or '—' }} · 基础经验 {{ pokemon.base_experience or '—' }}</p>
+			</div>
+		</div>
+	</div>
+</section>
+
+<section class="stats-panel">
+	<h2>种族值</h2>
+	<ul class="stat-list">
+		{% for stat in pokemon.stats %}
+		<li>
+			<span>{{ stat.label }}</span>
+			<div class="stat-bar" data-value="{{ stat.base }}">
+				<div style="width: {{ (stat.base / 255 * 100)|round(2) }}%"></div>
+			</div>
+			<span class="stat-value">{{ stat.base }}</span>
+		</li>
+		{% endfor %}
+	</ul>
+</section>
+
+<section class="evolution-panel">
+	<h2>进化链</h2>
+	{% if evolution_chain %}
+		<div class="evolution-grid">
+			{% for stage in evolution_chain %}
+			<div class="evo-stage">
+				{% for member in stage %}
+				<a class="evo-card" href="{{ url_for('pokemon_detail', pokemon_id=member.id) }}">
+					<p class="eyebrow">阶段 {{ loop.parent.index }}</p>
+					<h3>{{ member.display_name }}</h3>
+					<p>{{ member.names.ja or member.names.en }} · {{ member.names.en }}</p>
+				</a>
+				{% endfor %}
+			</div>
+			{% if not loop.last %}
+			<div class="evo-arrow" aria-hidden="true">→</div>
+			{% endif %}
+			{% endfor %}
+		</div>
+	{% else %}
+		<p>暂无进化链数据。</p>
+	{% endif %}
+</section>
+{% endblock %}
