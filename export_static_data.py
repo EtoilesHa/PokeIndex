@@ -18,6 +18,18 @@ BASE_DIR = Path(__file__).resolve().parent
 DEFAULT_DB = BASE_DIR / "pokeindex.db"
 DEFAULT_OUTPUT = BASE_DIR / "docs" / "data" / "pokemon.json"
 
+GENERATION_LABELS = {
+    "generation-i": {"label": "第一世代", "index": 1},
+    "generation-ii": {"label": "第二世代", "index": 2},
+    "generation-iii": {"label": "第三世代", "index": 3},
+    "generation-iv": {"label": "第四世代", "index": 4},
+    "generation-v": {"label": "第五世代", "index": 5},
+    "generation-vi": {"label": "第六世代", "index": 6},
+    "generation-vii": {"label": "第七世代", "index": 7},
+    "generation-viii": {"label": "第八世代", "index": 8},
+    "generation-ix": {"label": "第九世代", "index": 9},
+}
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Export Pokédex data to JSON")
@@ -164,6 +176,17 @@ def get_egg_groups(species: Dict) -> List[str]:
     return [group.get("name") for group in species.get("egg_groups", [])]
 
 
+def extract_generation(species: Dict) -> Dict[str, object]:
+    generation = species.get("generation") or {}
+    slug = generation.get("name")
+    if not slug:
+        return {"slug": "unknown", "label": "未知世代", "index": None}
+    meta = GENERATION_LABELS.get(slug)
+    label = meta["label"] if meta else slug.replace("generation-", "").upper()
+    index = meta["index"] if meta else None
+    return {"slug": slug, "label": label, "index": index}
+
+
 def build_evolution_index(rows: Sequence[sqlite3.Row]) -> Dict[str, Dict]:
     index: Dict[str, Dict] = {}
     children: Dict[str, List[str]] = defaultdict(list)
@@ -255,6 +278,7 @@ def serialize_dataset(conn: sqlite3.Connection) -> Dict:
             "abilities": abilities.get(row["id"], []),
             "stats": stats.get(row["id"], empty_stats()),
             "egg_groups": get_egg_groups(species_blob),
+            "generation": extract_generation(species_blob),
             "height": pokemon_blob.get("height"),
             "weight": pokemon_blob.get("weight"),
             "base_experience": pokemon_blob.get("base_experience"),

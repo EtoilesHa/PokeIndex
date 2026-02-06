@@ -1,9 +1,24 @@
 const DATA_URL = "data/pokemon.json";
 const MAX_BASE_STAT = 255;
 
+const GENERATION_FILTERS = [
+	{ id: "all", label: "全部世代" },
+	{ id: "generation-i", label: "第一世代" },
+	{ id: "generation-ii", label: "第二世代" },
+	{ id: "generation-iii", label: "第三世代" },
+	{ id: "generation-iv", label: "第四世代" },
+	{ id: "generation-v", label: "第五世代" },
+	{ id: "generation-vi", label: "第六世代" },
+	{ id: "generation-vii", label: "第七世代" },
+	{ id: "generation-viii", label: "第八世代" },
+	{ id: "generation-ix", label: "第九世代" },
+];
+
 const state = {
 	all: [],
 	filtered: [],
+	searchTerm: "",
+	activeGeneration: "all",
 };
 
 const elements = {
@@ -15,6 +30,7 @@ const elements = {
 	overlay: document.querySelector("#detail-overlay"),
 	detailContent: document.querySelector("#detail-content"),
 	closeButton: document.querySelector('[data-close]'),
+	generationFilter: document.querySelector("#generation-filter"),
 };
 
 const padId = (id) => String(id).padStart(3, "0");
@@ -34,6 +50,78 @@ const formatDate = (value) => {
 	});
 };
 
+function renderGenerationFilter() {
+	if (!elements.generationFilter) return;
+	const fragment = document.createDocumentFragment();
+	GENERATION_FILTERS.forEach((filter) => {
+		const button = document.createElement("button");
+		button.type = "button";
+		button.className = "gen-chip";
+		button.dataset.gen = filter.id;
+		button.textContent = filter.label;
+		const isActive = state.activeGeneration === filter.id;
+		button.setAttribute("aria-pressed", isActive ? "true" : "false");
+		if (isActive) {
+			button.classList.add("is-active");
+		}
+		fragment.appendChild(button);
+	});
+	elements.generationFilter.replaceChildren(fragment);
+}
+
+function handleGenerationFilterClick(event) {
+	const target = event.target.closest("[data-gen]");
+	if (!target) return;
+	const gen = target.dataset.gen;
+	if (!gen || gen === state.activeGeneration) return;
+	state.activeGeneration = gen;
+	renderGenerationFilter();
+	applyFilters();
+}
+
+function getGenerationLabel(id) {
+	const match = GENERATION_FILTERS.find((item) => item.id === id);
+	return match ? match.label : "";
+}
+
+function matchesGeneration(pokemon, generationId) {
+	if (!generationId || generationId === "all") {
+		return true;
+	}
+	return (pokemon.generation?.slug ?? "unknown") === generationId;
+}
+
+function applyFilters() {
+	const term = state.searchTerm;
+	const generation = state.activeGeneration;
+	state.filtered = state.all.filter(
+		(pokemon) => matchesTerm(pokemon, term) && matchesGeneration(pokemon, generation)
+	);
+	renderCards(state.filtered);
+	updateCountDisplay();
+}
+
+function updateCountDisplay() {
+	if (!elements.count) return;
+	const total = state.all.length;
+	const filtered = state.filtered.length;
+	const hasSearch = Boolean(state.searchTerm);
+	const generationActive = state.activeGeneration !== "all";
+	if (!hasSearch && !generationActive) {
+		elements.count.textContent = `${total} 条宝可梦记录`;
+		return;
+	}
+	const parts = [];
+	if (generationActive) {
+		parts.push(getGenerationLabel(state.activeGeneration));
+	}
+	if (hasSearch) {
+		parts.push(`搜索“${state.searchTerm}”`);
+	}
+	const context = parts.length ? `（${parts.join(" · ")}）` : "";
+	elements.count.textContent = `${filtered} / ${total} 条 ${context}`.trim();
+}
+
 async function bootstrap() {
 	try {
 		const response = await fetch(DATA_URL, { cache: "no-store" });
@@ -44,7 +132,8 @@ async function bootstrap() {
 		state.all = payload.pokemon ?? [];
 		state.filtered = state.all;
 		updateMeta(payload);
-		renderCards(state.filtered);
+		renderGenerationFilter();
+		applyFilters();
 	} catch (error) {
 		console.error(error);
 		elements.grid.innerHTML = `<div class="empty-state">无法加载图鉴：${error.message}</div>`;
@@ -72,13 +161,8 @@ function matchesTerm(pokemon, term) {
 }
 
 function handleSearch() {
-	const term = elements.search.value.trim();
-	state.filtered = state.all.filter((pokemon) => matchesTerm(pokemon, term));
-	const resultMeta = term
-		? `${state.filtered.length} / ${state.all.length} 条匹配`
-		: `${state.all.length} 条宝可梦记录`;
-	elements.count.textContent = resultMeta;
-	renderCards(state.filtered);
+	state.searchTerm = elements.search.value.trim();
+	applyFilters();
 }
 
 function renderCards(list) {
@@ -257,6 +341,9 @@ function wireEvents() {
 		handleSearch();
 		elements.search.focus();
 	});
+	if (elements.generationFilter) {
+		elements.generationFilter.addEventListener("click", handleGenerationFilterClick);
+	}
 	elements.grid.addEventListener("click", (event) => {
 		const card = event.target.closest(".pokemon-card");
 		if (!card) return;
