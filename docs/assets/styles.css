@@ -161,13 +161,14 @@ h1 {
 	flex-wrap: nowrap;
 	gap: 0.6rem;
 	overflow-x: auto;
+	overflow-y: hidden;
 	padding: 0.1rem 0 0.2rem;
 	scroll-snap-type: x mandatory;
 	-webkit-overflow-scrolling: touch;
 	-ms-overflow-style: none;
 	scrollbar-width: none;
-	touch-action: pan-x;
-	overscroll-behavior-x: contain;
+	touch-action: pan-x !important;
+	overscroll-behavior: contain;
 }
 
 .generation-filter::-webkit-scrollbar {
@@ -185,6 +186,7 @@ h1 {
 	cursor: pointer;
 	transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
 	white-space: nowrap;
+	touch-action: manipulation;
 }
 
 .gen-chip:hover {
