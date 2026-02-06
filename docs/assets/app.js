@@ -14,11 +14,33 @@ const GENERATION_FILTERS = [
 	{ id: "generation-ix", label: "第九世代" },
 ];
 
+const TYPE_FILTERS = [
+	{ id: "normal", label: "一般" },
+	{ id: "fire", label: "火" },
+	{ id: "water", label: "水" },
+	{ id: "electric", label: "电" },
+	{ id: "grass", label: "草" },
+	{ id: "ice", label: "冰" },
+	{ id: "fighting", label: "格斗" },
+	{ id: "poison", label: "毒" },
+	{ id: "ground", label: "地面" },
+	{ id: "flying", label: "飞行" },
+	{ id: "psychic", label: "超能" },
+	{ id: "bug", label: "虫" },
+	{ id: "rock", label: "岩石" },
+	{ id: "ghost", label: "幽灵" },
+	{ id: "dragon", label: "龙" },
+	{ id: "dark", label: "恶" },
+	{ id: "steel", label: "钢" },
+	{ id: "fairy", label: "妖精" },
+];
+
 const state = {
 	all: [],
 	filtered: [],
 	searchTerm: "",
 	activeGeneration: "all",
+	activeTypes: [],
 };
 
 const elements = {
@@ -31,6 +53,7 @@ const elements = {
 	detailContent: document.querySelector("#detail-content"),
 	closeButton: document.querySelector('[data-close]'),
 	generationFilter: document.querySelector("#generation-filter"),
+	typeFilter: document.querySelector("#type-filter"),
 };
 
 const padId = (id) => String(id).padStart(3, "0");
@@ -69,6 +92,25 @@ function renderGenerationFilter() {
 	elements.generationFilter.replaceChildren(fragment);
 }
 
+function renderTypeFilter() {
+	if (!elements.typeFilter) return;
+	const fragment = document.createDocumentFragment();
+	TYPE_FILTERS.forEach((filter) => {
+		const button = document.createElement("button");
+		button.type = "button";
+		button.className = "gen-chip";
+		button.dataset.type = filter.id;
+		button.textContent = filter.label;
+		const isActive = state.activeTypes.includes(filter.id);
+		button.setAttribute("aria-pressed", isActive ? "true" : "false");
+		if (isActive) {
+			button.classList.add("is-active");
+		}
+		fragment.appendChild(button);
+	});
+	elements.typeFilter.replaceChildren(fragment);
+}
+
 function handleGenerationFilterClick(event) {
 	const target = event.target.closest("[data-gen]");
 	if (!target) return;
@@ -79,9 +121,29 @@ function handleGenerationFilterClick(event) {
 	applyFilters();
 }
 
+function handleTypeFilterClick(event) {
+	const target = event.target.closest("[data-type]");
+	if (!target) return;
+	const typeId = target.dataset.type;
+	if (!typeId) return;
+	const exists = state.activeTypes.includes(typeId);
+	if (exists) {
+		state.activeTypes = state.activeTypes.filter((entry) => entry !== typeId);
+	} else {
+		state.activeTypes = [...state.activeTypes, typeId];
+	}
+	renderTypeFilter();
+	applyFilters();
+}
+
 function getGenerationLabel(id) {
 	const match = GENERATION_FILTERS.find((item) => item.id === id);
 	return match ? match.label : "";
+}
+
+function getTypeLabel(id) {
+	const match = TYPE_FILTERS.find((item) => item.id === id);
+	return match ? match.label : id;
 }
 
 function matchesGeneration(pokemon, generationId) {
@@ -91,11 +153,23 @@ function matchesGeneration(pokemon, generationId) {
 	return (pokemon.generation?.slug ?? "unknown") === generationId;
 }
 
+function matchesTypes(pokemon, typesFilter) {
+	if (!typesFilter.length) {
+		return true;
+	}
+	const source = pokemon.types ?? [];
+	return typesFilter.every((type) => source.includes(type));
+}
+
 function applyFilters() {
 	const term = state.searchTerm;
 	const generation = state.activeGeneration;
+	const typeFilters = state.activeTypes;
 	state.filtered = state.all.filter(
-		(pokemon) => matchesTerm(pokemon, term) && matchesGeneration(pokemon, generation)
+		(pokemon) =>
+			matchesTerm(pokemon, term) &&
+			matchesGeneration(pokemon, generation) &&
+			matchesTypes(pokemon, typeFilters)
 	);
 	renderCards(state.filtered);
 	updateCountDisplay();
@@ -107,13 +181,18 @@ function updateCountDisplay() {
 	const filtered = state.filtered.length;
 	const hasSearch = Boolean(state.searchTerm);
 	const generationActive = state.activeGeneration !== "all";
-	if (!hasSearch && !generationActive) {
+	const typeActive = state.activeTypes.length > 0;
+	if (!hasSearch && !generationActive && !typeActive) {
 		elements.count.textContent = `${total} 条宝可梦记录`;
 		return;
 	}
 	const parts = [];
 	if (generationActive) {
 		parts.push(getGenerationLabel(state.activeGeneration));
+	}
+	if (typeActive) {
+		const labels = state.activeTypes.map(getTypeLabel).join("、");
+		parts.push(`属性：${labels}`);
 	}
 	if (hasSearch) {
 		parts.push(`搜索“${state.searchTerm}”`);
@@ -133,6 +212,7 @@ async function bootstrap() {
 		state.filtered = state.all;
 		updateMeta(payload);
 		renderGenerationFilter();
+		renderTypeFilter();
 		applyFilters();
 	} catch (error) {
 		console.error(error);
@@ -343,6 +423,9 @@ function wireEvents() {
 	});
 	if (elements.generationFilter) {
 		elements.generationFilter.addEventListener("click", handleGenerationFilterClick);
+	}
+	if (elements.typeFilter) {
+		elements.typeFilter.addEventListener("click", handleTypeFilterClick);
 	}
 	elements.grid.addEventListener("click", (event) => {
 		const card = event.target.closest(".pokemon-card");
