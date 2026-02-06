@@ -93,19 +93,20 @@ function renderCards(list) {
 		card.className = "pokemon-card";
 		card.dataset.id = String(pokemon.id);
 		card.innerHTML = `
-			<div class="card-header">
-				<span class="poke-id">#${padId(pokemon.id)}</span>
-				<div class="type-row">
-					${renderTypes(pokemon.types)}
+			<div class="card-main">
+				<div class="card-image">
+					<img src="${pokemon.sprite}" alt="${pokemon.names?.zh ?? pokemon.names?.en ?? ""}">
 				</div>
-			</div>
-			<div class="card-image">
-				<img src="${pokemon.sprite}" alt="${pokemon.names?.zh ?? pokemon.names?.en ?? ""}">
-			</div>
-			<div class="card-body">
-				<h3>${pokemon.names?.zh ?? pokemon.names?.en ?? `宝可梦 #${padId(pokemon.id)}`}</h3>
-				<p class="subname">${pokemon.names?.ja ?? pokemon.names?.en ?? ""} · ${pokemon.names?.en ?? ""}</p>
-				<p class="description">${pokemon.description || "暂无图鉴描述。"}</p>
+				<div class="card-body">
+					<h3>${pokemon.names?.zh ?? pokemon.names?.en ?? `宝可梦 #${padId(pokemon.id)}`}</h3>
+					<p class="subname">${pokemon.names?.ja ?? pokemon.names?.en ?? ""} · ${pokemon.names?.en ?? ""}</p>
+					<div class="type-row">
+						${renderTypes(pokemon.types)}
+					</div>
+				</div>
+				<div class="card-meta">
+					<span class="poke-id">#${padId(pokemon.id)}</span>
+				</div>
 			</div>
 		`;
 		fragment.appendChild(card);

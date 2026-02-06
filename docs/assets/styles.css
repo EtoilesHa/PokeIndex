@@ -161,6 +161,10 @@ h1 {
 	text-align: left;
 	cursor: pointer;
 	font: inherit;
+	display: flex;
+	flex-direction: column;
+	gap: 0.8rem;
+	align-items: center;
 }
 
 .pokemon-card:hover,
@@ -170,22 +174,56 @@ h1 {
 	outline: none;
 }
 
-.card-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
+.poke-id {
+	letter-spacing: 0.18em;
+	font-size: 1.2rem;
+	color: var(--text);
+	font-weight: 600;
 }
 
-.poke-id {
-	letter-spacing: 0.2em;
-	font-size: 0.85rem;
-	color: var(--muted);
+
+.card-main {
+	display: grid;
+	grid-template-columns: auto 1fr auto;
+	align-items: center;
+	justify-items: center;
+	gap: 1.4rem;
+	width: 100%;
+}
+
+.card-image {
+	width: 150px;
+	text-align: center;
+}
+
+.card-image img {
+	width: 100%;
+	max-width: 150px;
+	height: auto;
+	filter: drop-shadow(0 10px 30px rgba(0,0,0,0.6));
+}
+
+.card-body {
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+	padding-left: 0.8rem;
+	width: 100%;
 }
 
 .type-row {
 	display: flex;
 	gap: 0.4rem;
 	flex-wrap: wrap;
+	margin-top: 0.2rem;
+}
+
+.card-meta {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 0.2rem;
+	justify-content: center;
 }
 
 .type-pill {
@@ -216,17 +254,6 @@ h1 {
 .type-pill.type-steel { background: #b7b7ce; color: #0e0e15; }
 .type-pill.type-fairy { background: #d685ad; color: #1d0b13; }
 
-.card-image {
-	text-align: center;
-	margin: 1rem 0;
-}
-
-.card-image img {
-	max-width: 150px;
-	height: auto;
-	filter: drop-shadow(0 10px 30px rgba(0,0,0,0.6));
-}
-
 .card-body h3 {
 	margin: 0.4rem 0 0.2rem;
 	font-size: 1.4rem;
@@ -243,6 +270,7 @@ h1 {
 	font-size: 0.9rem;
 	line-height: 1.5;
 	min-height: 3.6em;
+	margin-top: 0.8rem;
 }
 
 .empty-state {
@@ -464,6 +492,32 @@ h1 {
 	.close-detail {
 		top: 0.8rem;
 		right: 0.8rem;
+	}
+
+	.pokemon-card {
+		padding: 1rem;
+	}
+
+	.card-main {
+		grid-template-columns: auto 1fr auto;
+		gap: 1rem;
+	}
+
+	.card-image {
+		width: 96px;
+	}
+
+	.card-image img {
+		max-width: 96px;
+	}
+
+	.card-body {
+		gap: 0.25rem;
+		padding-left: 0.4rem;
+	}
+
+	.card-meta {
+		min-width: 70px;
 	}
 }
 
