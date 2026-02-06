@@ -85,6 +85,11 @@ main {
 	margin-bottom: 2.5rem;
 }
 
+.hero-compact {
+	grid-template-columns: 1fr;
+	justify-items: stretch;
+}
+
 .eyebrow {
 	text-transform: uppercase;
 	letter-spacing: 0.2em;
@@ -190,6 +195,26 @@ h1 {
 	background: var(--pill-bg);
 	text-transform: capitalize;
 }
+
+/* Type color palette matches Nintendo's official ordering */
+.type-pill.type-normal { background: #a8a77a; color: #0f1104; }
+.type-pill.type-fire { background: #ee8130; color: #190b01; }
+.type-pill.type-water { background: #6390f0; color: #010a1d; }
+.type-pill.type-electric { background: #f7d02c; color: #1b1501; }
+.type-pill.type-grass { background: #7ac74c; color: #081002; }
+.type-pill.type-ice { background: #96d9d6; color: #031110; }
+.type-pill.type-fighting { background: #c22e28; color: #fff3f1; }
+.type-pill.type-poison { background: #a33ea1; color: #fff1fe; }
+.type-pill.type-ground { background: linear-gradient(120deg, #e2bf65, #b28a33); color: #120b01; }
+.type-pill.type-flying { background: linear-gradient(120deg, #a98ff3, #86a8fc); color: #070720; }
+.type-pill.type-psychic { background: #f95587; color: #2f050f; }
+.type-pill.type-bug { background: #a6b91a; color: #0d0e01; }
+.type-pill.type-rock { background: #b6a136; color: #100b02; }
+.type-pill.type-ghost { background: #735797; color: #f4ebff; }
+.type-pill.type-dragon { background: linear-gradient(120deg, #6f35fc, #3b1ca6); color: #f7f4ff; }
+.type-pill.type-dark { background: #705746; color: #f7efe9; }
+.type-pill.type-steel { background: #b7b7ce; color: #0e0e15; }
+.type-pill.type-fairy { background: #d685ad; color: #1d0b13; }
 
 .card-image {
 	text-align: center;
