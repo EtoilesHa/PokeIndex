@@ -23,11 +23,13 @@
 				<input id="search-input" type="search" placeholder="输入 Pikachu / 皮卡丘 / 025" autocomplete="off" spellcheck="false">
 				<button type="button" id="reset-search">清除</button>
 			</form>
-			<div class="filter-card" aria-label="按世代筛选">
-				<div class="generation-filter" id="generation-filter" role="toolbar" aria-label="按世代筛选"></div>
-			</div>
-			<div class="filter-card" aria-label="按属性筛选">
-				<div class="generation-filter" id="type-filter" role="toolbar" aria-label="按属性筛选"></div>
+			<div class="filter-modules">
+				<section class="filter-module" aria-label="按世代筛选">
+					<div class="generation-filter" id="generation-filter" role="toolbar" aria-label="按世代筛选"></div>
+				</section>
+				<section class="filter-module" aria-label="按属性筛选">
+					<div class="generation-filter" id="type-filter" role="toolbar" aria-label="按属性筛选"></div>
+				</section>
 			</div>
 		</section>
 

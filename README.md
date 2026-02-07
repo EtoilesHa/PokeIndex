@@ -1,5 +1,6 @@
 POKEINDEX
 =========
+【python -m http.server --directory docs 8080】
 
 离线同步 [PokeAPI](https://pokeapi.co/) 数据到 `pokeindex.db`，再把内容导出为静态 JSON，最终由 GitHub Pages 托管的前端通过 JavaScript 读取完成搜索与详情展示。整个部署无需服务器或 Flask 进程。
 
