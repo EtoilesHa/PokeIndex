@@ -160,6 +160,49 @@ h1 {
 	box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
 }
 
+.filter-collapse {
+	width: 100%;
+}
+
+.filter-collapse summary {
+	list-style: none;
+	cursor: pointer;
+	font-weight: 600;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--muted);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.6rem;
+	padding: 0.2rem 0;
+	transition: color 150ms ease;
+}
+
+.filter-collapse summary::after {
+	content: "⌄";
+	font-size: 1.1rem;
+	color: var(--muted);
+	transition: transform 150ms ease, color 150ms ease;
+}
+
+.filter-collapse[open] summary::after {
+	transform: rotate(180deg);
+	color: var(--accent);
+}
+
+.filter-collapse summary::-webkit-details-marker {
+	display: none;
+}
+
+.filter-collapse[open] summary {
+	color: var(--text);
+}
+
+.filter-collapse[open] .generation-filter {
+	margin-top: 0.8rem;
+}
+
 .generation-filter {
 	margin-top: 0;
 	display: flex;
@@ -168,32 +211,6 @@ h1 {
 	overflow: visible;
 	padding: 0.1rem 0 0.2rem;
 	width: 100%;
-}
-
-/* Horizontal scroller keeps the generation chips on one visual row */
-.scroll-row {
-	flex-wrap: nowrap;
-	overflow-x: auto;
-	padding: 0.1rem 0.2rem 0.4rem;
-	margin-inline: -0.2rem;
-	scroll-snap-type: x proximity;
-	mask-image: linear-gradient(90deg, transparent, #000 2rem, #000 calc(100% - 2rem), transparent);
-	-webkit-mask-image: linear-gradient(90deg, transparent, #000 2rem, #000 calc(100% - 2rem), transparent);
-	scrollbar-width: thin;
-	scrollbar-color: var(--accent) transparent;
-}
-
-.scroll-row::-webkit-scrollbar {
-	height: 6px;
-}
-
-.scroll-row::-webkit-scrollbar-track {
-	background: transparent;
-}
-
-.scroll-row::-webkit-scrollbar-thumb {
-	background: linear-gradient(120deg, var(--accent), var(--accent-strong));
-	border-radius: 999px;
 }
 
 .gen-chip {

@@ -25,10 +25,16 @@
 			</form>
 			<div class="filter-modules">
 				<section class="filter-module" aria-label="按世代筛选">
-					<div class="generation-filter scroll-row" id="generation-filter" role="toolbar" aria-label="按世代筛选"></div>
+					<details class="filter-collapse" aria-label="按世代筛选">
+						<summary>按世代筛选</summary>
+						<div class="generation-filter" id="generation-filter" role="toolbar" aria-label="按世代筛选"></div>
+					</details>
 				</section>
 				<section class="filter-module" aria-label="按属性筛选">
-					<div class="generation-filter" id="type-filter" role="toolbar" aria-label="按属性筛选"></div>
+					<details class="filter-collapse" aria-label="按属性筛选">
+						<summary>按属性筛选</summary>
+						<div class="generation-filter" id="type-filter" role="toolbar" aria-label="按属性筛选"></div>
+					</details>
 				</section>
 			</div>
 		</section>
