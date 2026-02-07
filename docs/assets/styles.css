@@ -170,6 +170,32 @@ h1 {
 	width: 100%;
 }
 
+/* Horizontal scroller keeps the generation chips on one visual row */
+.scroll-row {
+	flex-wrap: nowrap;
+	overflow-x: auto;
+	padding: 0.1rem 0.2rem 0.4rem;
+	margin-inline: -0.2rem;
+	scroll-snap-type: x proximity;
+	mask-image: linear-gradient(90deg, transparent, #000 2rem, #000 calc(100% - 2rem), transparent);
+	-webkit-mask-image: linear-gradient(90deg, transparent, #000 2rem, #000 calc(100% - 2rem), transparent);
+	scrollbar-width: thin;
+	scrollbar-color: var(--accent) transparent;
+}
+
+.scroll-row::-webkit-scrollbar {
+	height: 6px;
+}
+
+.scroll-row::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.scroll-row::-webkit-scrollbar-thumb {
+	background: linear-gradient(120deg, var(--accent), var(--accent-strong));
+	border-radius: 999px;
+}
+
 .gen-chip {
 	border: 1px solid var(--border);
 	background: rgba(255, 255, 255, 0.05);
