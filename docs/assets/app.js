@@ -55,6 +55,7 @@ const elements = {
 	overlay: document.querySelector("#detail-overlay"),
 	detailContent: document.querySelector("#detail-content"),
 	closeButton: document.querySelector('[data-close]'),
+	backButton: document.querySelector('[data-back]'),
 	generationFilter: document.querySelector("#generation-filter"),
 	typeFilter: document.querySelector("#type-filter"),
 	randomSelect: document.querySelector("#random-generation-select"),
@@ -681,6 +682,12 @@ function wireEvents() {
 		}
 	});
 	elements.closeButton.addEventListener("click", closeDetailOverlay);
+	if (elements.backButton) {
+		elements.backButton.addEventListener("click", () => {
+			closeDetailOverlay();
+			window.scrollTo({ top: 0, behavior: "smooth" });
+		});
+	}
 	document.addEventListener("keydown", (event) => {
 		if (event.key === "Escape") {
 			closeDetailOverlay();
