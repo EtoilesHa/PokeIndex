@@ -36,6 +36,27 @@
 						<div class="generation-filter" id="type-filter" role="toolbar" aria-label="按属性筛选"></div>
 					</details>
 				</section>
+				<section class="filter-module randomizer-module" aria-label="随机宝可梦">
+					<details class="filter-collapse" aria-label="随机宝可梦">
+						<summary>随机宝可梦</summary>
+						<div class="randomizer-controls">
+							<select id="random-generation-select" multiple size="6" aria-label="随机宝可梦世代筛选"></select>
+							<div class="random-range" role="group" aria-label="限制图鉴编号范围">
+								<label class="range-field" for="range-start">
+									<span>起始</span>
+									<input type="number" id="range-start" min="1" inputmode="numeric" placeholder="#001" autocomplete="off">
+								</label>
+								<span class="range-separator">-</span>
+								<label class="range-field" for="range-end">
+									<span>结束</span>
+									<input type="number" id="range-end" min="1" inputmode="numeric" placeholder="#151" autocomplete="off">
+								</label>
+							</div>
+							<button type="button" id="random-pokemon-button">随机挑选</button>
+						</div>
+						<div class="random-result" id="random-result" aria-live="polite"></div>
+					</details>
+				</section>
 			</div>
 		</section>
 

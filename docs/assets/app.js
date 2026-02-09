@@ -39,8 +39,11 @@ const state = {
 	all: [],
 	filtered: [],
 	searchTerm: "",
-	activeGeneration: "all",
+	activeGenerations: [],
 	activeTypes: [],
+	rangeStart: null,
+	rangeEnd: null,
+	idBounds: { min: 1, max: 9999 },
 };
 
 const elements = {
@@ -54,9 +57,15 @@ const elements = {
 	closeButton: document.querySelector('[data-close]'),
 	generationFilter: document.querySelector("#generation-filter"),
 	typeFilter: document.querySelector("#type-filter"),
+	randomSelect: document.querySelector("#random-generation-select"),
+	randomButton: document.querySelector("#random-pokemon-button"),
+	randomResult: document.querySelector("#random-result"),
+	rangeStartInput: document.querySelector("#range-start"),
+	rangeEndInput: document.querySelector("#range-end"),
 };
 
 const padId = (id) => String(id).padStart(3, "0");
+const clampNumber = (value, min, max) => Math.min(Math.max(value, min), max);
 
 const formatDate = (value) => {
 	if (!value) return "";
@@ -82,7 +91,10 @@ function renderGenerationFilter() {
 		button.className = "gen-chip";
 		button.dataset.gen = filter.id;
 		button.textContent = filter.label;
-		const isActive = state.activeGeneration === filter.id;
+		const isAll = filter.id === "all";
+		const isActive = isAll
+			? state.activeGenerations.length === 0
+			: state.activeGenerations.includes(filter.id);
 		button.setAttribute("aria-pressed", isActive ? "true" : "false");
 		if (isActive) {
 			button.classList.add("is-active");
@@ -111,12 +123,55 @@ function renderTypeFilter() {
 	elements.typeFilter.replaceChildren(fragment);
 }
 
+function renderRandomGenerationSelect() {
+	if (!elements.randomSelect) return;
+	const fragment = document.createDocumentFragment();
+	GENERATION_FILTERS.filter((filter) => filter.id !== "all").forEach((filter) => {
+		const option = document.createElement("option");
+		option.value = filter.id;
+		option.textContent = filter.label;
+		fragment.appendChild(option);
+	});
+	elements.randomSelect.replaceChildren(fragment);
+	Array.from(elements.randomSelect.options).forEach((option) => {
+		option.selected = true;
+	});
+}
+
+function updateIdBounds() {
+	if (!state.all.length) return;
+	const ids = state.all
+		.map((entry) => Number(entry.id))
+		.filter((value) => Number.isFinite(value));
+	if (!ids.length) return;
+	state.idBounds.min = Math.min(...ids);
+	state.idBounds.max = Math.max(...ids);
+	if (elements.rangeStartInput) {
+		elements.rangeStartInput.min = state.idBounds.min;
+		elements.rangeStartInput.max = state.idBounds.max;
+		elements.rangeStartInput.placeholder = `#${padId(state.idBounds.min)}`;
+	}
+	if (elements.rangeEndInput) {
+		elements.rangeEndInput.min = state.idBounds.min;
+		elements.rangeEndInput.max = state.idBounds.max;
+		elements.rangeEndInput.placeholder = `#${padId(state.idBounds.max)}`;
+	}
+	syncRangeStateFromInputs();
+}
+
 function handleGenerationFilterClick(event) {
 	const target = event.target.closest("[data-gen]");
 	if (!target) return;
 	const gen = target.dataset.gen;
-	if (!gen || gen === state.activeGeneration) return;
-	state.activeGeneration = gen;
+	if (!gen) return;
+	if (gen === "all") {
+		state.activeGenerations = [];
+	} else {
+		const exists = state.activeGenerations.includes(gen);
+		state.activeGenerations = exists
+			? state.activeGenerations.filter((entry) => entry !== gen)
+			: [...state.activeGenerations, gen];
+	}
 	renderGenerationFilter();
 	applyFilters();
 }
@@ -146,11 +201,74 @@ function getTypeLabel(id) {
 	return match ? match.label : id;
 }
 
-function matchesGeneration(pokemon, generationId) {
-	if (!generationId || generationId === "all") {
+function sanitizeRangeValue(value) {
+	if (value === undefined || value === null) {
+		return null;
+	}
+	const trimmed = String(value).trim();
+	if (!trimmed) {
+		return null;
+	}
+	const parsed = Number(trimmed);
+	if (!Number.isFinite(parsed)) {
+		return null;
+	}
+	const rounded = Math.round(parsed);
+	return clampNumber(rounded, state.idBounds.min, state.idBounds.max);
+}
+
+function handleRangeInput(event) {
+	const target = event.target;
+	if (!target) return;
+	const sanitized = sanitizeRangeValue(target.value);
+	if (target === elements.rangeStartInput) {
+		state.rangeStart = sanitized;
+	} else if (target === elements.rangeEndInput) {
+		state.rangeEnd = sanitized;
+	}
+	if (sanitized === null && target.value !== "") {
+		target.value = "";
+	} else if (sanitized !== null) {
+		target.value = sanitized;
+	}
+}
+
+function syncRangeStateFromInputs() {
+	if (elements.rangeStartInput) {
+		const sanitized = sanitizeRangeValue(elements.rangeStartInput.value);
+		state.rangeStart = sanitized;
+		if (sanitized === null && elements.rangeStartInput.value !== "") {
+			elements.rangeStartInput.value = "";
+		} else if (sanitized !== null) {
+			elements.rangeStartInput.value = sanitized;
+		}
+	}
+	if (elements.rangeEndInput) {
+		const sanitized = sanitizeRangeValue(elements.rangeEndInput.value);
+		state.rangeEnd = sanitized;
+		if (sanitized === null && elements.rangeEndInput.value !== "") {
+			elements.rangeEndInput.value = "";
+		} else if (sanitized !== null) {
+			elements.rangeEndInput.value = sanitized;
+		}
+	}
+}
+
+function validateRange() {
+	const { rangeStart, rangeEnd } = state;
+	if (rangeStart !== null && rangeEnd !== null && rangeStart > rangeEnd) {
+		return { valid: false, message: "编号范围无效：起始需小于或等于结束编号。" };
+	}
+	return { valid: true };
+}
+
+
+function matchesGeneration(pokemon, activeGenerations) {
+	if (!activeGenerations.length) {
 		return true;
 	}
-	return (pokemon.generation?.slug ?? "unknown") === generationId;
+	const slug = pokemon.generation?.slug ?? "unknown";
+	return activeGenerations.includes(slug);
 }
 
 function matchesTypes(pokemon, typesFilter) {
@@ -161,14 +279,27 @@ function matchesTypes(pokemon, typesFilter) {
 	return typesFilter.every((type) => source.includes(type));
 }
 
+function matchesRange(pokemon) {
+	const id = Number(pokemon.id);
+	if (!Number.isFinite(id)) {
+		return false;
+	}
+	if (state.rangeStart !== null && id < state.rangeStart) {
+		return false;
+	}
+	if (state.rangeEnd !== null && id > state.rangeEnd) {
+		return false;
+	}
+	return true;
+}
+
 function applyFilters() {
 	const term = state.searchTerm;
-	const generation = state.activeGeneration;
 	const typeFilters = state.activeTypes;
 	state.filtered = state.all.filter(
 		(pokemon) =>
 			matchesTerm(pokemon, term) &&
-			matchesGeneration(pokemon, generation) &&
+			matchesGeneration(pokemon, state.activeGenerations) &&
 			matchesTypes(pokemon, typeFilters)
 	);
 	renderCards(state.filtered);
@@ -180,7 +311,7 @@ function updateCountDisplay() {
 	const total = state.all.length;
 	const filtered = state.filtered.length;
 	const hasSearch = Boolean(state.searchTerm);
-	const generationActive = state.activeGeneration !== "all";
+	const generationActive = state.activeGenerations.length > 0;
 	const typeActive = state.activeTypes.length > 0;
 	if (!hasSearch && !generationActive && !typeActive) {
 		elements.count.textContent = `${total} 条宝可梦记录`;
@@ -188,7 +319,12 @@ function updateCountDisplay() {
 	}
 	const parts = [];
 	if (generationActive) {
-		parts.push(getGenerationLabel(state.activeGeneration));
+		const labels = state.activeGenerations
+			.map((slug) => getGenerationLabel(slug) || slug)
+			.filter(Boolean);
+		if (labels.length) {
+			parts.push(labels.join("、"));
+		}
 	}
 	if (typeActive) {
 		const labels = state.activeTypes.map(getTypeLabel).join("、");
@@ -201,6 +337,106 @@ function updateCountDisplay() {
 	elements.count.textContent = `${filtered} / ${total} 条 ${context}`.trim();
 }
 
+function getSelectedRandomGenerations() {
+	if (!elements.randomSelect) return [];
+	return Array.from(elements.randomSelect.selectedOptions).map((option) => option.value);
+}
+
+function getRandomPool(selection) {
+	const basePool = state.filtered.filter((pokemon) => matchesRange(pokemon));
+	if (!selection.length) {
+		return basePool;
+	}
+	return basePool.filter((pokemon) => selection.includes(pokemon.generation?.slug ?? ""));
+}
+
+function updateRandomResult(payload) {
+	if (!elements.randomResult) return;
+	if (typeof payload === "string") {
+		elements.randomResult.textContent = payload;
+		return;
+	}
+	const { pokemon } = payload;
+	const displayName = pokemon.names?.zh ?? pokemon.names?.en ?? `#${padId(pokemon.id)}`;
+	elements.randomResult.innerHTML = `
+		<div class="random-result-line">
+			<button type="button" class="random-result-link" data-random-id="${pokemon.id}">
+				${displayName} · #${padId(pokemon.id)}
+			</button>
+		</div>
+	`;
+}
+
+function handleRandomButtonClick() {
+	if (!state.all.length) {
+		updateRandomResult("图鉴尚未加载，稍后再试。");
+		return;
+	}
+	syncRangeStateFromInputs();
+	const rangeValidation = validateRange();
+	if (!rangeValidation.valid) {
+		updateRandomResult(rangeValidation.message);
+		return;
+	}
+	resetFiltersToDefault({ silent: true, skipScroll: true, keepOverlay: true });
+	const selection = getSelectedRandomGenerations();
+	if (!state.filtered.length) {
+		updateRandomResult("当前筛选没有可供随机的宝可梦。");
+		return;
+	}
+	const pool = getRandomPool(selection);
+	if (!pool.length) {
+		const message = selection.length ? "所选世代在当前结果中暂无宝可梦。" : "当前没有可供随机的宝可梦。";
+		updateRandomResult(message);
+		return;
+	}
+	const choice = pool[Math.floor(Math.random() * pool.length)];
+	updateRandomResult({ pokemon: choice, selection });
+	if (elements.search) {
+		elements.search.value = padId(choice.id);
+	}
+	handleSearch();
+	showDetailById(choice.id);
+	scrollCardIntoView(choice.id);
+}
+
+function scrollCardIntoView(id) {
+	const card = elements.grid.querySelector(`[data-id="${id}"]`);
+	if (!card) {
+		return;
+	}
+	card.classList.add("is-highlighted");
+	card.scrollIntoView({ behavior: "smooth", block: "center" });
+	setTimeout(() => {
+		card.classList.remove("is-highlighted");
+	}, 1400);
+}
+
+function resetFiltersToDefault(options = {}) {
+	const { silent = false, skipScroll = false, keepOverlay = false } = options;
+	if (!state.all.length) {
+		return;
+	}
+	state.searchTerm = "";
+	state.activeGenerations = [];
+	state.activeTypes = [];
+	if (elements.search) {
+		elements.search.value = "";
+	}
+	renderGenerationFilter();
+	renderTypeFilter();
+	applyFilters();
+	if (!keepOverlay) {
+		closeDetailOverlay();
+	}
+	if (!skipScroll) {
+		window.scrollTo({ top: 0, behavior: "smooth" });
+	}
+	if (!silent) {
+		updateRandomResult("筛选已重置，已回到首页。");
+	}
+}
+
 async function bootstrap() {
 	try {
 		const response = await fetch(DATA_URL, { cache: "no-store" });
@@ -210,6 +446,7 @@ async function bootstrap() {
 		const payload = await response.json();
 		state.all = payload.pokemon ?? [];
 		state.filtered = state.all;
+		updateIdBounds();
 		updateMeta(payload);
 		renderGenerationFilter();
 		renderTypeFilter();
@@ -449,7 +686,25 @@ function wireEvents() {
 			closeDetailOverlay();
 		}
 	});
+	if (elements.randomButton) {
+		elements.randomButton.addEventListener("click", handleRandomButtonClick);
+	}
+	if (elements.randomResult) {
+		elements.randomResult.addEventListener("click", (event) => {
+			const target = event.target.closest("[data-random-id]");
+			if (!target) return;
+			showDetailById(target.dataset.randomId);
+			scrollCardIntoView(target.dataset.randomId);
+		});
+	}
+	if (elements.rangeStartInput) {
+		elements.rangeStartInput.addEventListener("change", handleRangeInput);
+	}
+	if (elements.rangeEndInput) {
+		elements.rangeEndInput.addEventListener("change", handleRangeInput);
+	}
 }
 
+renderRandomGenerationSelect();
 wireEvents();
 bootstrap();
